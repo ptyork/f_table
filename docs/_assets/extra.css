@@ -1,0 +1,22 @@
+/* 
+ * Custom CSS for f_table documentation
+ * 
+ * Ensures code blocks use fonts with proper Unicode box-drawing character support
+ */
+
+code, 
+kbd, 
+pre, 
+.highlight code,
+.md-typeset code,
+.md-typeset pre,
+.md-typeset pre > code {
+    font-family: 'Cascadia Code', Consolas, Monaco, 'Courier New', monospace !important;
+    font-size: 0.8rem;
+    line-height: 1.2;
+}
+
+h2 code {
+    font-size: 1.2rem !important;
+    font-weight: bold;
+}

@@ -16,22 +16,34 @@ a full TUI library.
 ```python
 from f_table import get_table
 
-rows = [
-    ["Alice", 30, "Engineer"],
-    ["Bob", 25, "Designer"],
+data = [
+    ["Alice", 147000, .035, "Engineer"],
+    ["Bob", 88000, .0433, "Designer"],
 ]
 
-print(get_table(rows, header_row=["Name", "Age", "Title"]))
+print(get_table(
+    data,
+    header_row=["Name", "Salary", "Adj", "Title"],
+    col_defs=["A","<$ (,)", ">.2%", "A"],
+    table_width=50,
+))
 ```
 
 Output:
 
 ```
-  Name  │ Age │  Title   
-────────┼─────┼──────────
- Alice  │ 30  │ Engineer 
- Bob    │ 25  │ Designer 
+      Name     │   Salary  │  Adj  │    Title     
+───────────────┼───────────┼───────┼──────────────
+ Alice         │ $ 147,000 │ 3.50% │ Engineer     
+ Bob           │ $  88,000 │ 4.33% │ Designer     
 ```
+
+## What you’ll find in this guide
+- [Getting started](getting-started.md): install and first table
+- [Usage guide](usage.md): headers, widths, wrapping, truncation, alignment
+- [Formatting guide](formatting.md): column definitions and flags
+- [Styles](styles.md): pick a look (box, rounded, markdown, no border)
+- [API reference](references/functions.md): full docs for public functions and classes
 
 ## When to use f_table
 
@@ -39,6 +51,3 @@ Use f-table when you need reliable text tables in logs, CLIs, or scripts, and
 want the control of Python format specs without heavy UI tooling. If you need
 interactive widgets or color/styling, consider pairing with Rich — but for
 static tables, f-table is intentionally simple and fast.
-
-## Get Started
-

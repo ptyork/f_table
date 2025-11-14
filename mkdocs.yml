@@ -1,0 +1,90 @@
+nav:
+  - Overview:
+    - index.md
+    - getting-started.md
+    - usage.md
+    - formatting.md
+    - styles.md
+  - Reference:
+    - references/functions.md
+    - references/classes.md
+    - references/exceptions.md
+    - references/styles.md
+
+site_name: f-table - Simple terminal tables using format strings
+site_url: https://ptyork.github.io/f_table/
+repo_url: https://github.com/ptyork/f_table/
+watch:
+  - src
+  - docs
+  
+extra_css:
+  - _assets/extra.css
+
+markdown_extensions: 
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      toc_depth: 2
+
+
+plugins: 
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_signature: false
+            show_root_heading: true
+            show_object_full_path: false
+
+theme:
+  name: material
+  # logo: _images/logo.svg
+  # favicon: _images/favicon.svg
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.tracking
+    - toc.integrate
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+
+  palette:
+  
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default 
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference

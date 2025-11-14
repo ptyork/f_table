@@ -1,0 +1,149 @@
+"""Unicode box drawing characters enum."""
+
+from enum import Enum
+
+
+class BoxChars(Enum):
+    """Unicode box drawing characters
+    
+    Naming convention (normalized for consistency):
+
+    - SINGLE_* : thin single lines (Unicode: "LIGHT")
+    - HEAVY_* : thick single lines (Unicode: "HEAVY")
+    - DOUBLE_* : parallel double lines (Unicode: "DOUBLE")
+    - Mixed lines use pattern: WEIGHT_DIR_AND_WEIGHT_DIR
+    """
+
+    # SINGLE (thin single-line) characters
+    # BOX DRAWINGS LIGHT HORIZONTAL
+    SINGLE_HORIZONTAL = "\u2500"                             # ─
+    # BOX DRAWINGS LIGHT VERTICAL
+    SINGLE_VERTICAL = "\u2502"                               # │
+    # BOX DRAWINGS LIGHT DOWN AND RIGHT
+    SINGLE_DOWN_AND_RIGHT = "\u250c"                         # ┌
+    # BOX DRAWINGS LIGHT DOWN AND LEFT
+    SINGLE_DOWN_AND_LEFT = "\u2510"                          # ┐
+    # BOX DRAWINGS LIGHT UP AND RIGHT
+    SINGLE_UP_AND_RIGHT = "\u2514"                           # └
+    # BOX DRAWINGS LIGHT UP AND LEFT
+    SINGLE_UP_AND_LEFT = "\u2518"                            # ┘
+    # BOX DRAWINGS LIGHT VERTICAL AND RIGHT
+    SINGLE_VERTICAL_AND_RIGHT = "\u251c"                     # ├
+    # BOX DRAWINGS LIGHT VERTICAL AND LEFT
+    SINGLE_VERTICAL_AND_LEFT = "\u2524"                      # ┤
+    # BOX DRAWINGS LIGHT DOWN AND HORIZONTAL
+    SINGLE_DOWN_AND_HORIZONTAL = "\u252c"                    # ┬
+    # BOX DRAWINGS LIGHT UP AND HORIZONTAL
+    SINGLE_UP_AND_HORIZONTAL = "\u2534"                      # ┴
+    # BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL
+    SINGLE_VERTICAL_AND_HORIZONTAL = "\u253c"                # ┼
+    # BOX DRAWINGS LIGHT DOUBLE DASH HORIZONTAL
+    SINGLE_DOUBLE_DASH_HORIZONTAL = "\u254c"                 # ╌
+    # BOX DRAWINGS LIGHT DOUBLE DASH VERTICAL
+    SINGLE_DOUBLE_DASH_VERTICAL = "\u254e"                   # ╎
+
+    # ARC characters
+    # BOX DRAWINGS LIGHT ARC DOWN AND RIGHT
+    SINGLE_ARC_DOWN_AND_RIGHT = "\u256d"                     # ╭
+    # BOX DRAWINGS LIGHT ARC DOWN AND LEFT
+    SINGLE_ARC_DOWN_AND_LEFT = "\u256e"                      # ╮
+    # BOX DRAWINGS LIGHT ARC UP AND LEFT
+    SINGLE_ARC_UP_AND_LEFT = "\u256f"                        # ╯
+    # BOX DRAWINGS LIGHT ARC UP AND RIGHT
+    SINGLE_ARC_UP_AND_RIGHT = "\u2570"                       # ╰
+
+    # HEAVY (thick single-line) characters
+    # BOX DRAWINGS HEAVY HORIZONTAL
+    HEAVY_HORIZONTAL = "\u2501"                              # ━
+    # BOX DRAWINGS HEAVY VERTICAL
+    HEAVY_VERTICAL = "\u2503"                                # ┃
+    # BOX DRAWINGS HEAVY DOWN AND RIGHT
+    HEAVY_DOWN_AND_RIGHT = "\u250f"                          # ┏
+    # BOX DRAWINGS HEAVY DOWN AND LEFT
+    HEAVY_DOWN_AND_LEFT = "\u2513"                           # ┓
+    # BOX DRAWINGS HEAVY UP AND RIGHT
+    HEAVY_UP_AND_RIGHT = "\u2517"                            # ┗
+    # BOX DRAWINGS HEAVY UP AND LEFT
+    HEAVY_UP_AND_LEFT = "\u251b"                             # ┛
+    # BOX DRAWINGS HEAVY VERTICAL AND RIGHT
+    HEAVY_VERTICAL_AND_RIGHT = "\u2523"                      # ┣
+    # BOX DRAWINGS HEAVY VERTICAL AND LEFT
+    HEAVY_VERTICAL_AND_LEFT = "\u252b"                       # ┫
+    # BOX DRAWINGS HEAVY DOWN AND HORIZONTAL
+    HEAVY_DOWN_AND_HORIZONTAL = "\u2533"                     # ┳
+    # BOX DRAWINGS HEAVY_UP_AND_HORIZONTAL (Unicode: BOX DRAWINGS HEAVY UP AND HORIZONTAL)
+    HEAVY_UP_AND_HORIZONTAL = "\u253b"                       # ┻
+    # BOX DRAWINGS HEAVY VERTICAL AND HORIZONTAL
+    HEAVY_VERTICAL_AND_HORIZONTAL = "\u254b"                 # ╋
+    # BOX DRAWINGS HEAVY DOUBLE DASH HORIZONTAL
+    HEAVY_DOUBLE_DASH_HORIZONTAL = "\u254d"                  # ╍
+    # BOX DRAWINGS HEAVY DOUBLE DASH VERTICAL
+    HEAVY_DOUBLE_DASH_VERTICAL = "\u254f"                    # ╏
+
+    # DOUBLE (parallel line) characters
+    # BOX DRAWINGS DOUBLE HORIZONTAL
+    DOUBLE_HORIZONTAL = "\u2550"                             # ═
+    # BOX DRAWINGS DOUBLE VERTICAL
+    DOUBLE_VERTICAL = "\u2551"                               # ║
+    # BOX DRAWINGS DOUBLE DOWN AND RIGHT
+    DOUBLE_DOWN_AND_RIGHT = "\u2554"                         # ╔
+    # BOX DRAWINGS DOUBLE DOWN AND LEFT
+    DOUBLE_DOWN_AND_LEFT = "\u2557"                          # ╗
+    # BOX DRAWINGS DOUBLE UP AND RIGHT
+    DOUBLE_UP_AND_RIGHT = "\u255a"                           # ╚
+    # BOX DRAWINGS DOUBLE UP AND LEFT
+    DOUBLE_UP_AND_LEFT = "\u255d"                            # ╝
+    # BOX DRAWINGS DOUBLE VERTICAL AND RIGHT
+    DOUBLE_VERTICAL_AND_RIGHT = "\u2560"                     # ╠
+    # BOX DRAWINGS DOUBLE VERTICAL AND LEFT
+    DOUBLE_VERTICAL_AND_LEFT = "\u2563"                      # ╣
+    # BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL
+    DOUBLE_DOWN_AND_HORIZONTAL = "\u2566"                    # ╦
+    # BOX DRAWINGS DOUBLE UP AND HORIZONTAL
+    DOUBLE_UP_AND_HORIZONTAL = "\u2569"                      # ╩
+    # BOX DRAWINGS DOUBLE VERTICAL AND HORIZONTAL
+    DOUBLE_VERTICAL_AND_HORIZONTAL = "\u256c"                # ╬
+
+    # MIXED single and double line characters
+    # BOX DRAWINGS DOWN SINGLE AND RIGHT DOUBLE
+    DOUBLE_RIGHT_AND_SINGLE_DOWN = "\u2552"                  # ╒
+    # BOX DRAWINGS DOWN DOUBLE AND RIGHT SINGLE
+    SINGLE_RIGHT_AND_DOUBLE_DOWN = "\u2553"                  # ╓
+    # BOX DRAWINGS DOWN SINGLE AND LEFT DOUBLE
+    DOUBLE_LEFT_AND_SINGLE_DOWN = "\u2555"                   # ╕
+    # BOX DRAWINGS DOWN DOUBLE AND LEFT SINGLE
+    SINGLE_LEFT_AND_DOUBLE_DOWN = "\u2556"                   # ╖
+    # BOX DRAWINGS UP SINGLE AND RIGHT DOUBLE
+    DOUBLE_RIGHT_AND_SINGLE_UP = "\u2558"                    # ╘
+    # BOX DRAWINGS UP DOUBLE AND RIGHT SINGLE
+    SINGLE_RIGHT_AND_DOUBLE_UP = "\u2559"                    # ╙
+    # BOX DRAWINGS UP SINGLE AND LEFT DOUBLE
+    DOUBLE_LEFT_AND_SINGLE_UP = "\u255b"                     # ╛
+    # BOX DRAWINGS UP DOUBLE AND LEFT SINGLE
+    SINGLE_LEFT_AND_DOUBLE_UP = "\u255c"                     # ╜
+    # BOX DRAWINGS VERTICAL SINGLE AND RIGHT DOUBLE
+    DOUBLE_VERTICAL_AND_SINGLE_RIGHT = "\u255e"              # ╞
+    # BOX DRAWINGS VERTICAL DOUBLE AND RIGHT SINGLE
+    SINGLE_VERTICAL_AND_DOUBLE_RIGHT = "\u255f"              # ╟
+    # BOX DRAWINGS VERTICAL SINGLE AND LEFT DOUBLE
+    DOUBLE_VERTICAL_AND_SINGLE_LEFT = "\u2561"               # ╡
+    # BOX DRAWINGS VERTICAL DOUBLE AND LEFT SINGLE
+    SINGLE_VERTICAL_AND_DOUBLE_LEFT = "\u2562"               # ╢
+    # BOX DRAWINGS DOWN SINGLE AND HORIZONTAL DOUBLE
+    DOUBLE_HORIZONTAL_AND_SINGLE_DOWN = "\u2564"             # ╤
+    # BOX DRAWINGS DOWN DOUBLE AND HORIZONTAL SINGLE
+    SINGLE_HORIZONTAL_AND_DOUBLE_DOWN = "\u2565"             # ╥
+    # BOX DRAWINGS UP SINGLE AND HORIZONTAL DOUBLE
+    DOUBLE_HORIZONTAL_AND_SINGLE_UP = "\u2567"               # ╧
+    # BOX DRAWINGS UP DOUBLE AND HORIZONTAL SINGLE
+    SINGLE_HORIZONTAL_AND_DOUBLE_UP = "\u2568"               # ╨
+    # BOX DRAWINGS VERTICAL SINGLE AND HORIZONTAL DOUBLE
+    DOUBLE_HORIZONTAL_AND_SINGLE_VERTICAL = "\u256a"         # ╪
+    # BOX DRAWINGS VERTICAL DOUBLE AND HORIZONTAL SINGLE
+    SINGLE_HORIZONTAL_AND_DOUBLE_VERTICAL = "\u256b"         # ╫
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
