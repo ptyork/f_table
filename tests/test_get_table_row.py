@@ -1,5 +1,5 @@
 import unittest
-from f_table import get_table_row, BasicScreenStyle
+from craftable import get_table_row, BasicScreenStyle
 
 
 class TestGetTableRow(unittest.TestCase):

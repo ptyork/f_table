@@ -1,6 +1,6 @@
 # Formatting Guide
 
-f-table embraces Python's [format specification
+craftable embraces Python's [format specification
 mini-language](https://docs.python.org/3/library/string.html#format-specification-mini-language)
 to format columns and values within each cell. Additional directives are added
 to enhance the formatting capabilities.
@@ -58,7 +58,7 @@ character can be one of:
 ## Width
 
 If provided, width can deviate somewhat from the expected behavior in Python
-format specifiers. By default, f-table interprets it to be the __exact__ width
+format specifiers. By default, craftable interprets it to be the __exact__ width
 of the content of the column, while f-strings consider this to be a minimum
 width. Consider the following:
 
@@ -67,7 +67,7 @@ from math import pi
 
 print("f-string:")
 print(f"{pi:5} | {3.1:5}")
-print("f-table:")
+print("craftable:")
 print(get_table([[pi, 3.1]], col_defs=["5","5"]))
 ```
 
@@ -76,7 +76,7 @@ The output is:
 ```
 f-string:
 3.141592653589793 |   3.1
-f-table:
+craftable:
  3.141 │ 3.1
  59265 │
  35897 │
@@ -159,7 +159,7 @@ for additional details and options.
 
 ## Additional Table Flags
 
-f-table allows for three additional flags to be appended to the format string to
+craftable allows for three additional flags to be appended to the format string to
 further refine the formatting behavior when text is rendered into table cells.
 Append flags to the end of a column spec string (after type/precision):
 
@@ -177,7 +177,7 @@ account the width of all other columns.
 For example:
 
 ```python
-from f_table import get_table, BasicScreenStyle
+from craftable import get_table, BasicScreenStyle
 
 rows = [["Alice", "Engineer", "30"], ["Bob", "Designer", "25"]]
 col_defs = ["A", "<10", "<5"]  # first column auto-expands
@@ -321,7 +321,7 @@ accept all of the components of a column definition, however, only alignment
 Example:
 
 ```python
-from f_table import get_table
+from craftable import get_table
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(
@@ -362,7 +362,7 @@ Definitions:
 Example:
 
 ```python
-from f_table import get_table
+from craftable import get_table
 from rich.console import Console
 
 def fmt_date(value):

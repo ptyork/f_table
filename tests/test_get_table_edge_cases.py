@@ -1,6 +1,6 @@
 import unittest
-from f_table import get_table
-from f_table import BasicScreenStyle, RoundedBorderScreenStyle, MarkdownStyle
+from craftable import get_table
+from craftable import BasicScreenStyle, RoundedBorderScreenStyle, MarkdownStyle
 
 
 class TestEdgeCases(unittest.TestCase):

@@ -1,7 +1,7 @@
 # Functions
 
-::: f_table.get_table
+::: craftable.get_table
 
-::: f_table.get_table_row
+::: craftable.get_table_row
 
-::: f_table.get_table_header
+::: craftable.get_table_header

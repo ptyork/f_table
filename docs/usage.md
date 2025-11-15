@@ -1,6 +1,6 @@
 # Usage Guide
 
-This guide shows the basics of how invoke and use f-table.
+This guide shows the basics of how to invoke and use craftable.
 
 ## Core Functions
 
@@ -57,7 +57,7 @@ The optional `header_row` named argument should contain a single collection of v
 The following demonstrates usage of this parameter:
 
 ```python
-from f_table import get_table
+from craftable import get_table
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"]))
@@ -82,10 +82,10 @@ Output:
 `col_defs` and `header_defs` are collections of strings that define how each
 column should be formatted. These strings use Python's format mini-language plus
 table-specific flags (see [Formatting guide](formatting.md)). The simplicity and
-elegance of this is where f-table shines and the main reason for it's creation.
+elegance of this is where craftable shines and the main reason for its creation.
 
 ```python
-from f_table import get_table
+from craftable import get_table
 
 rows = [["Alice", 30], ["Bob", 25]]
 col_defs = ["10", ">5"]  # left-align 10 chars, right-align 5 chars
@@ -118,7 +118,7 @@ create auto-sized, center-aligned cells.
 The following is a more complete, styled example:
 
 ```python
-from f_table import get_table, RoundedBorderScreenStyle
+from craftable import get_table, RoundedBorderScreenStyle
 
 rows = [["Alice", 30], ["Bob", 25], ["Charlie", 35]]
 print(get_table(
@@ -146,7 +146,7 @@ Output:
 ╰──────────────────────┴─────╯
 ```
 
-The style classes inacluded with f-table are:
+The style classes inacluded with craftable are:
 
 - `NoBorderScreenStyle` — minimal, compact (default)
 - `BasicScreenStyle` — classic box drawing

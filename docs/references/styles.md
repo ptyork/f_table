@@ -1,16 +1,16 @@
 # Styles
 
-::: f_table.NoBorderScreenStyle
+::: craftable.NoBorderScreenStyle
 
-::: f_table.BasicScreenStyle
+::: craftable.BasicScreenStyle
 
-::: f_table.RoundedBorderScreenStyle
+::: craftable.RoundedBorderScreenStyle
 
-::: f_table.MarkdownStyle
+::: craftable.MarkdownStyle
 
-::: f_table.ASCIIStyle
+::: craftable.ASCIIStyle
 
-::: f_table.TableStyle
+::: craftable.TableStyle
 
-::: f_table.BoxChars
+::: craftable.BoxChars
 

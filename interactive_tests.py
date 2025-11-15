@@ -1,6 +1,6 @@
 from pprint import pprint
 from datetime import date, datetime
-from f_table import (
+from craftable import (
     get_table,
     ColDef,
     BasicScreenStyle,

@@ -1,6 +1,6 @@
 import unittest
-from f_table import get_table_header
-from f_table.styles.basic_screen_style import BasicScreenStyle
+from craftable import get_table_header
+from craftable.styles.basic_screen_style import BasicScreenStyle
 
 
 class TestGetTableHeader(unittest.TestCase):

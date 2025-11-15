@@ -1,7 +1,7 @@
 [project]
-name = "f-table"
+name = "craftable"
 version = "0.1.0"
-description = "f-table - Simple, elegant terminal tables using format strings"
+description = "craftable - craft elegant tables using format strings"
 authors = [{ name = "Paul York", email = "paul@yorkfamily.com" }]
 readme = "README.md"
 requires-python = ">=3.10"
@@ -11,13 +11,14 @@ keywords = [
     "terminal",
     "formatting",
     "f-string",
+    "craftable",
 ]
 dependencies = []
 
 [project.urls]
-homepage = "https://ptyork.github.io/f_table"
-repository = "https://github.com/ptyork/f_table"
-"Bug Tracker" = "https://github.com/ptyork/f_table/issues"
+homepage = "https://ptyork.github.io/craftable"
+repository = "https://github.com/ptyork/craftable"
+"Bug Tracker" = "https://github.com/ptyork/craftable/issues"
 
 
 
@@ -39,16 +40,16 @@ default-groups = ["dev", "docs"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "src/f_table",
+    "src/craftable",
 ]
 
 [tool.hatch.build.targets.wheel]
 include = [
-    "src/f_table",
+    "src/craftable",
 ]
 
 [tool.hatch.build.targets.wheel.sources]
-"src/f_table" = "f_table"
+"src/craftable" = "craftable"
 
 [build-system]
 requires = ["hatchling"]

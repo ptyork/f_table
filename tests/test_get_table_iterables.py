@@ -1,5 +1,5 @@
 import unittest
-from f_table import get_table
+from craftable import get_table
 
 
 class TestIterableTypes(unittest.TestCase):

@@ -1,5 +1,5 @@
 import unittest
-from f_table import get_table, get_table_row, ColDef
+from craftable import get_table, get_table_row, ColDef
 
 
 class TestPrefixSuffix(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 import re
-from f_table import get_table, get_table_row
-from f_table.styles.no_border_screen_style import NoBorderScreenStyle
+from craftable import get_table, get_table_row
+from craftable.styles.no_border_screen_style import NoBorderScreenStyle
 
 
 class TestPrePostProcessors(unittest.TestCase):

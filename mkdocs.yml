@@ -11,9 +11,9 @@ nav:
     - references/exceptions.md
     - references/styles.md
 
-site_name: f-table - Simple terminal tables using format strings
-site_url: https://ptyork.github.io/f_table/
-repo_url: https://github.com/ptyork/f_table/
+site_name: craftable - Simple terminal tables using format strings
+site_url: https://ptyork.github.io/craftable/
+repo_url: https://github.com/ptyork/craftable/
 watch:
   - src
   - docs

@@ -1,7 +1,7 @@
-# f-table — Simple terminal tables using format strings
+# craftable — craft elegant terminal tables using format strings
 
 Generate clean, flexible text tables in the terminal or in text files using a
-familiar, Python-native formatting approach. f-table focuses on attractive and
+familiar, Python-native formatting approach. craftable focuses on attractive and
 predictable output, zero dependencies, a simple and elegant API, and fast
 rendering without requiring a full TUI library.
 
@@ -15,7 +15,7 @@ rendering without requiring a full TUI library.
 ## Quick example
 
 ```python
-from f_table import get_table
+from craftable import get_table
 
 data = [
     ["Alice", 147000, .035, "Engineer"],
@@ -46,9 +46,9 @@ Output:
 - [Styles](styles.md): pick a look (box, rounded, markdown, no border)
 - [API Reference](references/functions.md): full docs for public functions and classes
 
-## When to use f_table
+## When to use craftable
 
-Use f-table when you need reliable text tables in logs, CLIs, or scripts, and
+Use craftable when you need reliable text tables in logs, CLIs, or scripts, and
 want the control of Python format specs without heavy UI tooling. If you need
 interactive widgets or color/styling, consider pairing with Rich — but for
-static tables, f-table is intentionally simple and fast.
+static tables, craftable is intentionally simple and fast.

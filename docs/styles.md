@@ -1,6 +1,6 @@
 # Styles
 
-f_table includes multiple built-in styles to match your environment or output
+craftable includes multiple built-in styles to match your environment or output
 format. Swap styles via the `style` parameter.
 
 ## Available styles
@@ -10,7 +10,7 @@ format. Swap styles via the `style` parameter.
 Minimal, whitespace-delimited with a simple header separator.
 
 ```python
-from f_table import get_table
+from craftable import get_table
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"]))
@@ -30,7 +30,7 @@ Output:
 Classic box drawing with Unicode characters (│ ─ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼).
 
 ```python
-from f_table import get_table, BasicScreenStyle
+from craftable import get_table, BasicScreenStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"], style=BasicScreenStyle()))
@@ -52,7 +52,7 @@ Output:
 Rounded corners for a softer look (╭ ╮ ╰ ╯ │ ─).
 
 ```python
-from f_table import get_table, RoundedBorderScreenStyle
+from craftable import get_table, RoundedBorderScreenStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"], style=RoundedBorderScreenStyle()))
@@ -74,7 +74,7 @@ Output:
 GitHub-flavored Markdown tables for documentation.
 
 ```python
-from f_table import get_table, MarkdownStyle
+from craftable import get_table, MarkdownStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"], style=MarkdownStyle()))
@@ -94,7 +94,7 @@ Output:
 Plain ASCII borders for terminals and logs.
 
 ```python
-from f_table import get_table, ASCIIStyle
+from craftable import get_table, ASCIIStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"], style=ASCIIStyle()))
@@ -136,7 +136,7 @@ All visual details are exposed as attributes on the style object. You can
 instantiate a style, change a few attributes, and pass it to `get_table`.
 
 ```python
-from f_table import get_table, BasicScreenStyle, BoxChars
+from craftable import get_table, BasicScreenStyle, BoxChars
 
 rows = [["Alice", 30], ["Bob", 25]]
 
@@ -172,7 +172,7 @@ ASCII.
 For full control, subclass `TableStyle` and set the attributes you care about in `__init__`. Here’s a minimal ASCII style that uses `+`, `-`, and `|`.
 
 ```python
-from f_table import TableStyle, BoxChars, get_table
+from craftable import TableStyle, BoxChars, get_table
 
 class DoubleBorderStyle(TableStyle):
     """Bold outer borders with double-line rules and single-line interior."""
@@ -232,7 +232,7 @@ Output:
 If you want maximum information density, reduce padding on a base style:
 
 ```python
-from f_table import get_table, BasicScreenStyle
+from craftable import get_table, BasicScreenStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 

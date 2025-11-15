@@ -1,10 +1,10 @@
 import unittest
-from f_table import get_table, ColDef, ColDefList
-from f_table.styles.basic_screen_style import BasicScreenStyle
-from f_table.styles.rounded_border_screen_style import RoundedBorderScreenStyle
-from f_table.styles.markdown_style import MarkdownStyle
-from f_table.styles.ascii_style import ASCIIStyle
-from f_table.styles.no_border_screen_style import NoBorderScreenStyle
+from craftable import get_table, ColDef, ColDefList
+from craftable.styles.basic_screen_style import BasicScreenStyle
+from craftable.styles.rounded_border_screen_style import RoundedBorderScreenStyle
+from craftable.styles.markdown_style import MarkdownStyle
+from craftable.styles.ascii_style import ASCIIStyle
+from craftable.styles.no_border_screen_style import NoBorderScreenStyle
 
 
 class TestGetTable(unittest.TestCase):

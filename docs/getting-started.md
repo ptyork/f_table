@@ -1,35 +1,35 @@
 # Getting Started
 
-This page helps you install f_table and print your first table.
+This page helps you install craftable and print your first table.
 
 ## Installation
 
-f_table is published on PyPI. Install with your preferred package manager:
+craftable is published on PyPI. Install with your preferred package manager:
 
 === "pip"
     ```bash
-    pip install f-table
+    pip install craftable
     ```
 
 === "poetry"
     ```bash
-    poetry add f-table
+    poetry add craftable
     ```
 
 === "uv"
     ```bash
-    uv add f-table
+    uv add craftable
     ```
 
     Or if using uv pip:
     ```bash
-    uv pip install f-table
+    uv pip install craftable
     ```
 
 ## Your First Table
 
 ```python
-from f_table import get_table
+from craftable import get_table
 
 rows = [
     ["Alice", 30, "Engineer"],
@@ -51,7 +51,7 @@ Output:
 Add a `header_row` and try a different look with the `style` parameter:
 
 ```python
-from f_table import get_table, BasicScreenStyle
+from craftable import get_table, BasicScreenStyle
 
 rows = [
     ["Alice", 30, "Engineer"],

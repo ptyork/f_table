@@ -1,5 +1,5 @@
 import unittest
-from f_table import ColDefList, ColDef
+from craftable import ColDefList, ColDef
 
 
 class TestColDefList(unittest.TestCase):

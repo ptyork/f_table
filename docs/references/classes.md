@@ -1,10 +1,10 @@
 # Classes
 
-::: f_table.ColDef
+::: craftable.ColDef
     options:
       members: true
 
-::: f_table.ColDefList
+::: craftable.ColDefList
     options:
       members: true
 

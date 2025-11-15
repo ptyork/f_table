@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Performance profiling script for f_table.
+Performance profiling script for craftable.
 
 This script creates various test scenarios and profiles the performance
 of get_table() to identify bottlenecks and optimization opportunities.
@@ -18,9 +18,9 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from f_table import get_table
-from f_table.styles.rounded_border_screen_style import RoundedBorderScreenStyle
-from f_table.styles.markdown_style import MarkdownStyle
+from craftable import get_table
+from craftable.styles.rounded_border_screen_style import RoundedBorderScreenStyle
+from craftable.styles.markdown_style import MarkdownStyle
 
 
 def generate_test_data(rows: int, cols: int, data_type: str = "mixed") -> List[List[Any]]:
@@ -234,7 +234,7 @@ def profile_scenario(name: str, func):
 def main():
     """Run all profiling scenarios."""
     print("="*70)
-    print("F_TABLE PERFORMANCE PROFILING")
+    print("CRAFTABLE PERFORMANCE PROFILING")
     print("="*70)
     
     scenarios = [

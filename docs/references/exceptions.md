@@ -1,5 +1,5 @@
 # Exceptions
 
-::: f_table.InvalidTableError
+::: craftable.InvalidTableError
 
-::: f_table.InvalidColDefError
+::: craftable.InvalidColDefError
