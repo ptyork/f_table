@@ -8,6 +8,8 @@
 
 ::: f_table.MarkdownStyle
 
+::: f_table.ASCIIStyle
+
 ::: f_table.TableStyle
 
 ::: f_table.BoxChars

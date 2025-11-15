@@ -1,8 +1,8 @@
-# Usage guide
+# Usage Guide
 
-This guide shows how to control headers, column widths, wrapping, truncation, alignment, and layout.
+This guide shows the basics of how invoke and use f-table.
 
-## Core functions
+## Core Functions
 
 There are three functions that can be used to generate tables:
 
@@ -29,6 +29,8 @@ def get_table(
     table_width: int = 0,
     lazy_end: bool = False,
     separate_rows: bool = False,
+    preprocessors: List[Callable[[Any], Any] | None] | None = None,
+    postprocessors: List[Callable[[Any, str], str] | None] | None = None,
 ) -> str:
 ```
 
@@ -97,12 +99,21 @@ print(get_table(rows, col_defs=col_defs))
 Default `col_defs` create auto-sized, left-aligned cells. Default `header_defs`
 create auto-sized, center-aligned cells.
 
-## Table Width and Style
+## Style and Table Width
 
-- `style` specifies the style class to use to render the table
-- `table_width` constrains the entire rendered table width if desired
-- `lazy_end=True` omits the rightmost border (useful for compact logs)
-- `separate_rows=True` draws a divider between each data row
+- `style` specifies the style class to use to render the table. See below for
+  the list of included options.
+- `table_width` constrains the entire rendered table width if desired. Note that
+  this is the actual total width of the string, including all borders and
+  padding.
+- `lazy_end=True` omits the rightmost border. This is especiall useful for log
+  files that may have long messages, as often you want them nicely formatted,
+  but you also want to avoid line wrapping and keep each entry on a single line.
+- `separate_rows=True` draws a divider line between each data row.
+- `preprocessors`/`postprocessors` (advanced): column-indexed callbacks.
+  Preprocessors run before formatting and influence widths; postprocessors run
+  after sizing/wrapping for decorations like colors/styles (should not change
+  displayed width).
 
 The following is a more complete, styled example:
 
@@ -135,14 +146,21 @@ Output:
 ╰──────────────────────┴─────╯
 ```
 
-Included styles include:
+The style classes inacluded with f-table are:
 
 - `NoBorderScreenStyle` — minimal, compact (default)
 - `BasicScreenStyle` — classic box drawing
 - `RoundedBorderScreenStyle` — rounded corners
+- `ASCIIStyle` — classic, 7-bit ASCII drawing
 - `MarkdownStyle` — GitHub-flavored Markdown tables
 
 Modifying existing styles or creating custom styles is trivial.
 
 See [Styles](styles.md) for additional visual examples and the [API
 reference](references/styles.md) for class details.
+
+## Advanced: Preprocessors and Postprocessors
+
+These allow you more advanced control over the formatting of individual cells
+through the use of custom callback funcitons. Usage and examples are provided in
+the [Formatting Guide](formatting.md#advanced-preprocessors-and-postprocessors).

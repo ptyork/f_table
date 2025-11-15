@@ -1,4 +1,5 @@
 from pprint import pprint
+from datetime import date, datetime
 from f_table import (
     get_table,
     ColDef,
@@ -10,6 +11,48 @@ from f_table import (
 
 def l():
     print("\n" + "*" * 80 + "\n")
+
+
+from rich.console import Console
+
+def fmt_date(value):
+    if isinstance(value, date):
+        try:
+            return value.strftime("%a, %b %d, %Y")
+        except Exception as e:
+            print(f"Error formatting date: {e}")
+    return value
+
+def fmt_currency(original, text):
+    try:
+        value = float(original)
+        if value < 0:
+            return f"[red]{text}[/red]"
+    except Exception:
+        pass
+    return text
+
+data = [
+    [ "Lowe's", -54.25, date(2025, 6, 15) ],
+    [ "Walmart", -62.83, date(2025, 6, 17) ],
+    [ "Petsmart", -35.4, datetime(2025, 6, 17) ],
+    [ "Deposit", 1500.0, date(2025, 6, 18) ],
+]
+
+console = Console()
+console.print(get_table(
+    data,
+    header_row = [ "Transaction", "Amount", "Date" ],
+    col_defs = [ "<A", "<$ (>10.2f)", "<" ],
+    preprocessors = [ None, None, fmt_date ],
+    postprocessors = [ None, fmt_currency, None ],
+    style=RoundedBorderScreenStyle(),
+    table_width=60,
+))
+
+exit()
+
+
 
 data = [
     ["Alice", 147000, .035, "Engineer"],

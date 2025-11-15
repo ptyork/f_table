@@ -1,15 +1,16 @@
 # f-table — Simple terminal tables using format strings
 
-Generate clean, flexible text tables in the terminal using a familiar,
-Python-native formatting approach. f-table focuses on attractive and predictable
-output, zero dependencies, an elegant API, and fast rendering without requiring
-a full TUI library.
+Generate clean, flexible text tables in the terminal or in text files using a
+familiar, Python-native formatting approach. f-table focuses on attractive and
+predictable output, zero dependencies, a simple and elegant API, and fast
+rendering without requiring a full TUI library.
 
 - Small, zero-dependency API
 - Works with plain Python data (lists/rows)
-- Column definitions use Python’s format mini-language plus a few table flags
-- Multiple built-in styles: no borders, box drawing, rounded, Markdown
+- Column definitions use Python’s format mini-language
+- Multiple built-in styles: no borders, box drawing, rounded, ASCII, Markdown
 - Supports wrapping, truncation, alignment, and auto-fill columns
+- Simple, but flexible and extensible to meet most any use case
 
 ## Quick example
 
@@ -39,11 +40,11 @@ Output:
 ```
 
 ## What you’ll find in this guide
-- [Getting started](getting-started.md): install and first table
-- [Usage guide](usage.md): headers, widths, wrapping, truncation, alignment
-- [Formatting guide](formatting.md): column definitions and flags
+- [Getting Started](getting-started.md): install and first table
+- [Usage Guide](usage.md): headers, widths, wrapping, truncation, alignment
+- [Formatting Guide](formatting.md): column definitions and flags
 - [Styles](styles.md): pick a look (box, rounded, markdown, no border)
-- [API reference](references/functions.md): full docs for public functions and classes
+- [API Reference](references/functions.md): full docs for public functions and classes
 
 ## When to use f_table
 
