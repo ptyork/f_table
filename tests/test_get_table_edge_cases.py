@@ -1,9 +1,13 @@
+"""Edge case tests for get_table with unusual data shapes and characters."""
+
 import unittest
 from craftable import get_table
-from craftable import BasicScreenStyle, RoundedBorderScreenStyle, MarkdownStyle
+from craftable.styles import BasicScreenStyle, RoundedBorderScreenStyle, MarkdownStyle
 
 
 class TestEdgeCases(unittest.TestCase):
+    """Edge cases: long rows, special characters, ragged data, etc."""
+
     def test_table_with_very_long_row(self):
         data = [list(range(50))]
         result = get_table(data, table_width=500)
@@ -108,12 +112,23 @@ class TestEdgeCases(unittest.TestCase):
         header = ["Col1", "Col2", "Col3"]
         col_defs = ["", "^", ""]
         header_defs = ["", "", "<"]
-        result = get_table(data, header_row=header, style=MarkdownStyle(), col_defs=col_defs, header_defs=header_defs)
+        result = get_table(
+            data,
+            header_row=header,
+            style=MarkdownStyle(),
+            col_defs=col_defs,
+            header_defs=header_defs,
+        )
         self.assertIn("|", result)
         self.assertIn("Col1", result)
 
     def test_table_with_long_text_varying_lengths(self):
-        data = [["abc", "123", "123 123 123"], ["abc", "123 123", "123 123 123 123"], ["abc", "123", "123 123 123 123 123"], ["abc", "123 123", "123 123"]]
+        data = [
+            ["abc", "123", "123 123 123"],
+            ["abc", "123 123", "123 123 123 123"],
+            ["abc", "123", "123 123 123 123 123"],
+            ["abc", "123 123", "123 123"],
+        ]
         result = get_table(data)
         self.assertIn("abc", result)
         self.assertIn("123 123 123 123 123", result)

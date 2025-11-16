@@ -1,3 +1,5 @@
+"""Tests for preprocessor and postprocessor callback functionality."""
+
 import unittest
 import re
 from craftable import get_table, get_table_row
@@ -5,11 +7,13 @@ from craftable.styles.no_border_screen_style import NoBorderScreenStyle
 
 
 class TestPrePostProcessors(unittest.TestCase):
+    """Ensure preprocessors and postprocessors are invoked correctly with row context."""
+
     def test_preprocessor_applies_before_formatting_affecting_value(self):
         rows = [[1, 2, 3]]
         col_defs = [">3d", ">3d", ">3d"]
 
-        def pre_double(x):
+        def pre_double(x, row, idx):
             return x * 2
 
         table = get_table(
@@ -27,7 +31,7 @@ class TestPrePostProcessors(unittest.TestCase):
         row = ["ab", "cd"]
         col_defs = ["<5", "<5"]
 
-        def post_upper(orig, text: str) -> str:
+        def post_upper(orig, text: str, row, idx) -> str:
             return text.upper()
 
         out = get_table_row(
@@ -45,10 +49,10 @@ class TestPrePostProcessors(unittest.TestCase):
         rows = [["alice", 1.2345], ["bob", 9.0]]
         col_defs = ["<10", ">8.2f"]
 
-        def pre_cap(val):
+        def pre_cap(val, row, idx):
             return str(val).capitalize()
 
-        def post_bracket(original, text):
+        def post_bracket(original, text, row, idx):
             return f"[{text}]"
 
         table = get_table(
@@ -63,7 +67,9 @@ class TestPrePostProcessors(unittest.TestCase):
         self.assertIn("Alice", table)
         self.assertIn("Bob", table)
         # Allow for either bracketed alignment variant
-        self.assertTrue(re.search(r"\[[^\]]*1\.23[^\]]*\]", table) or "[    1.23]" in table)
+        self.assertTrue(
+            re.search(r"\[[^\]]*1\.23[^\]]*\]", table) or "[    1.23]" in table
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover

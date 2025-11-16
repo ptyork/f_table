@@ -1,11 +1,33 @@
 # Styles
 
-craftable includes multiple built-in styles to match your environment or output
-format. Swap styles via the `style` parameter.
+Craftable provides two families of styles:
+
+- Display/printable styles that render strings for terminals, logs, and docs
+  (used with `get_table()`).
+- Export/document styles that generate files (used with `export_table()`).
+
+Use display styles when you want immediate, human-readable output
+(terminal/Markdown/ASCII). Use export styles when you want an artifact like
+.xlsx or .docx.
+
+|      Display Styles      | Export Styles |
+| ------------------------ | ------------- |
+| [NoBorderScreenStyle](#style-noborder)      | [XlsxStyle](#style-xlsx)     |
+| [BasicScreenStyle](#style-basic)         | [OdsStyle](#style-ods)      |
+| [RoundedBorderScreenStyle](#style-rounded) | [OdtStyle](#style-odt)      |
+| [MarkdownStyle](#style-markdown)            | [DocxStyle](#style-docx)     |
+| [ASCIIStyle](#style-ascii)               | [RtfStyle](#style-rtf)      |
+
+
+!!! note
+
+    The table above was generated using craftable's get_table function. You can
+    [view the code in the recipes](recipes.md#markdown-table).
+
 
 ## Available styles
 
-### NoBorderScreenStyle (default)
+### NoBorderScreenStyle (default) {#style-noborder}
 
 Minimal, whitespace-delimited with a simple header separator.
 
@@ -25,12 +47,13 @@ Output:
  Bob   │ 25  
 ```
 
-### BasicScreenStyle
+### BasicScreenStyle {#style-basic}
 
 Classic box drawing with Unicode characters (│ ─ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼).
 
 ```python
-from craftable import get_table, BasicScreenStyle
+from craftable import get_table
+from craftable.styles import BasicScreenStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"], style=BasicScreenStyle()))
@@ -47,12 +70,13 @@ Output:
 └───────┴─────┘
 ```
 
-### RoundedBorderScreenStyle
+### RoundedBorderScreenStyle {#style-rounded}
 
 Rounded corners for a softer look (╭ ╮ ╰ ╯ │ ─).
 
 ```python
-from craftable import get_table, RoundedBorderScreenStyle
+from craftable import get_table
+from craftable.styles import RoundedBorderScreenStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"], style=RoundedBorderScreenStyle()))
@@ -69,12 +93,13 @@ Output:
 ╰───────┴─────╯
 ```
 
-### MarkdownStyle
+### MarkdownStyle {#style-markdown}
 
 GitHub-flavored Markdown tables for documentation.
 
 ```python
-from craftable import get_table, MarkdownStyle
+from craftable import get_table
+from craftable.styles import MarkdownStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"], style=MarkdownStyle()))
@@ -89,12 +114,13 @@ Output:
 | Bob   | 25  |
 ```
 
-### ASCIIStyle
+### ASCIIStyle {#style-ascii}
 
 Plain ASCII borders for terminals and logs.
 
 ```python
-from craftable import get_table, ASCIIStyle
+from craftable import get_table
+from craftable.styles import ASCIIStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 print(get_table(rows, header_row=["Name", "Age"], style=ASCIIStyle()))
@@ -116,13 +142,15 @@ Output:
 From `get_table`:
 
 - `table_width`: set the maximum width for the entire table
-- `lazy_end`: omit the right border for compact output
+- `lazy_end`: omit the right border for more compact output
 - `separate_rows`: add a horizontal separator between rows (non-Markdown styles)
 
 From style classes (subclasses of `TableStyle`):
 
 - `cell_padding`: style-dependent spacing inside each cell
 - `min_width`: style-dependent minimum column width
+- `terminal_style`: determines whether the maximum width of a table is
+  potentially constrained by the width of the terminal window.
 
 ## Customizing styles
 
@@ -136,7 +164,8 @@ All visual details are exposed as attributes on the style object. You can
 instantiate a style, change a few attributes, and pass it to `get_table`.
 
 ```python
-from craftable import get_table, BasicScreenStyle, BoxChars
+from craftable import get_table
+from craftable.styles import BasicScreenStyle, BoxChars
 
 rows = [["Alice", 30], ["Bob", 25]]
 
@@ -146,7 +175,7 @@ style = BasicScreenStyle()
 style.cell_padding = 2
 style.header_bottom_line = BoxChars.DOUBLE_HORIZONTAL
 style.header_bottom_delimiter = BoxChars.DOUBLE_VERTICAL_AND_HORIZONTAL
-style.header_bottom_left = Bo`xChars.DOUBLE_VERTICAL_AND_RIGHT
+style.header_bottom_left = BoxChars.DOUBLE_VERTICAL_AND_RIGHT
 style.header_bottom_right = BoxChars.DOUBLE_VERTICAL_AND_LEFT
 
 # Use double verticals between values
@@ -172,7 +201,8 @@ ASCII.
 For full control, subclass `TableStyle` and set the attributes you care about in `__init__`. Here’s a minimal ASCII style that uses `+`, `-`, and `|`.
 
 ```python
-from craftable import TableStyle, BoxChars, get_table
+from craftable import get_table
+from craftable.styles import TableStyle, BoxChars
 
 class DoubleBorderStyle(TableStyle):
     """Bold outer borders with double-line rules and single-line interior."""
@@ -232,7 +262,8 @@ Output:
 If you want maximum information density, reduce padding on a base style:
 
 ```python
-from craftable import get_table, BasicScreenStyle
+from craftable import get_table
+from craftable.styles import BasicScreenStyle
 
 rows = [["Alice", 30], ["Bob", 25]]
 
@@ -244,5 +275,54 @@ print(get_table(rows, header_row=["Name", "Age"], style=dense))
 
 ## Style Code References
 
-For class-level APIs like `TableStyle` and `BoxChars`, see the [API
-reference](references/styles.md).
+For class-level APIs like `TableStyle` and `BoxChars`, see the [Text Style API](references/text_styles.md) and [Document Style API](references/doc_styles.md).
+
+## Document / Export Styles
+
+Craftable also includes styles for writing files instead of rendering terminal text. Use these with `export_table()`.
+
+### XlsxStyle {#style-xlsx}
+
+Excel workbook output (`.xlsx`, binary). Best for spreadsheets and BI tools.
+
+### OdsStyle {#style-ods}
+
+OpenDocument Spreadsheet (`.ods`, binary), compatible with LibreOffice and others.
+
+### OdtStyle {#style-odt}
+
+OpenDocument Text (`.odt`, binary) for word processors like LibreOffice Writer.
+
+### DocxStyle {#style-docx}
+
+Microsoft Word document (`.docx`, binary). Good for formal reports.
+
+### RtfStyle {#style-rtf}
+
+Rich Text Format (`.rtf`, text). Portable with broad editor support.
+
+Example:
+
+```python
+from craftable import export_table
+from craftable.adapters import from_dicts
+from craftable.styles import XlsxStyle
+
+rows, headers = from_dicts([
+  {"name": "Alice", "age": 30},
+  {"name": "Bob", "age": None},
+])
+
+export_table(
+  rows,
+  header_row=headers,
+  style=XlsxStyle(),
+  file="people.xlsx",
+  none_text="—",
+)
+```
+
+Notes:
+- Some document styles provide a dedicated writer; `export_table()` will use it when a `file` is supplied.
+- If a style renders to bytes, `export_table()` writes in binary mode for path-like `file` values.
+- Non-terminal styles typically set `terminal_style=False` (terminal width detection is skipped).

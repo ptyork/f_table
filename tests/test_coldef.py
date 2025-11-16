@@ -1,8 +1,12 @@
+"""Unit tests for ColDef parsing, formatting, and alignment behavior."""
+
 import unittest
 from craftable import ColDef
 
 
 class TestColDef(unittest.TestCase):
+    """ColDef API and formatting behavior tests."""
+
     def test_parse_and_format(self):
         cd = ColDef.parse("<10")
         self.assertEqual(cd.width, 10)

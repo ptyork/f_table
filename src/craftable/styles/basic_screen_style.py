@@ -5,4 +5,5 @@ from .table_style import TableStyle
 
 class BasicScreenStyle(TableStyle):
     """Classic box drawing with Unicode characters (│ ─ ┌ ┐ └ ┘ ├ ┤ ┬ ┴ ┼)."""
+
     pass

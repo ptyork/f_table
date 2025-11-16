@@ -7,7 +7,8 @@ rendering without requiring a full TUI library.
 
 - Small, zero-dependency API
 - Works with plain Python data (lists/rows)
-- Column definitions use Python’s format mini-language
+- Built-in adapters for dicts, dataclasses, numpy, pandas, SQL, and more
+- Column definitions use Python's format mini-language
 - Multiple built-in styles: no borders, box drawing, rounded, ASCII, Markdown
 - Supports wrapping, truncation, alignment, and auto-fill columns
 - Simple, but flexible and extensible to meet most any use case
@@ -38,6 +39,28 @@ Output:
  Alice         │ $ 147,000 │ 3.50% │ Engineer     
  Bob           │ $  88,000 │ 4.33% │ Designer     
 ```
+
+## Data Adapters
+
+Convert Python data structures directly into tables with built-in adapters:
+
+```python
+from craftable import get_table
+from craftable.adapters import from_dicts
+
+# List of dictionaries (handles missing keys gracefully)
+data = [
+    {"name": "Alice", "age": 30, "city": "LA"},
+    {"name": "Bob", "age": 25},  # missing 'city'
+]
+
+rows, headers = from_dicts(data)
+print(get_table(rows, header_row=headers))
+```
+
+Adapters available for: dicts, dataclasses, numpy arrays, pandas/polars DataFrames,
+SQL cursors, and more. See the [Adapters documentation](https://ptyork.github.io/craftable/adapters/)
+for details.
 
 ## When to use craftable
 

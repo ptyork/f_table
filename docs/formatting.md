@@ -136,9 +136,9 @@ In practice, the most common types are:
 - `e` to display a number in scientific notation
 - `%` to display a number as a percent
 
-Of course, you should reference the (language
-specifications)[https://docs.python.org/3/library/string.html#format-specification-mini-language]
-for details on precision and type options.
+Reference the [language
+specifications](https://docs.python.org/3/library/string.html#format-specification-mini-language)
+for full details on precision and type options.
 
 ## Other Format Specifier Options
 
@@ -150,18 +150,18 @@ The rest of the standard Python format specifiers are supported, including:
 - `sign` — controls the way positive and negative numbers are rendered. `+`
   forces a sign (`+` or `-`) to prefix all numbers. `-` or none to append a sign
   only to negative numbers.
-- z|#|0 — `z`, `#` and `0` further refinew the way values are rendered.
+- z|#|0 — `z`, `#` and `0` further refine the way values are rendered.
 - `grouping` - add `,` or `_` to apply thousands separation for large numbers.
  
-Consult the (language
-specifications)[https://docs.python.org/3/library/string.html#format-specification-mini-language]
+Consult the [language
+specifications](https://docs.python.org/3/library/string.html#format-specification-mini-language)
 for additional details and options.
 
 ## Additional Table Flags
 
-craftable allows for three additional flags to be appended to the format string to
-further refine the formatting behavior when text is rendered into table cells.
-Append flags to the end of a column spec string (after type/precision):
+Craftable allows for three additional flags to be appended to the format string
+to further refine the formatting behavior when text is rendered into table
+cells. Append flags to the end of a column spec string (after type/precision):
 
 ### A — Auto-fill
 
@@ -177,7 +177,8 @@ account the width of all other columns.
 For example:
 
 ```python
-from craftable import get_table, BasicScreenStyle
+from craftable import get_table
+from craftable.styles import BasicScreenStyle
 
 rows = [["Alice", "Engineer", "30"], ["Bob", "Designer", "25"]]
 col_defs = ["A", "<10", "<5"]  # first column auto-expands
@@ -336,7 +337,7 @@ This centers "Name" while left-aligning the data below it.
 
 If no header_defs are provided, the headers will be centered.
 
-## Advanced: Preprocessors and Postprocessors
+## Preprocessors and Postprocessors
 
 Use per-column callbacks to transform values before formatting (preprocessors)
 and decorate formatted text (postprocessors). These callbacks are stored on each
@@ -347,18 +348,9 @@ Definitions:
 
   - Preprocessor: `fn(value) -> value`
 
-    Preprocessors run beforfe any sizing or formatting is performed. This can
-    be useful to conditionally hide certain values or to convert values that
-    are not specifically supported by format specification mini-language, such
-    as date/time formatting.
 
   - Postprocessor: `fn(original_value, text) -> str`
-
-    Postprocessors run after all other formatting, alignment, and wrapping has
-    occurred. This is likely most useful to conditionally add ANSI codes or Rich
-    formatting codes that would otherwise affect the column size calculations.
-
-
+    
 Example:
 
 ```python
@@ -368,7 +360,7 @@ from rich.console import Console
 def fmt_date(value):
     if isinstance(value, date):
         try:
-            return value.strftime("%a, %b %d, %Y")
+            return value.strftime("%a %b %d, %Y")
         except Exception as e:
             print(f"Error formatting date: {e}")
     return value
@@ -404,14 +396,14 @@ console.print(get_table(
 Output:
 
 ```
-╭─────────────────────────┬────────────┬───────────────────╮
-│       Transaction       │   Amount   │        Date       │
-├─────────────────────────┼────────────┼───────────────────┤
-│ Lowe's                  │ $   -54.25 │ Sun, Jun 15, 2025 │
-│ Walmart                 │ $   -62.83 │ Tue, Jun 17, 2025 │
-│ Petsmart                │ $   -35.40 │ Tue, Jun 17, 2025 │
-│ Deposit                 │ $  1500.00 │ Wed, Jun 18, 2025 │
-╰─────────────────────────┴────────────┴───────────────────╯
+╭─────────────────────────┬────────────┬──────────────────╮
+│       Transaction       │   Amount   │       Date       │
+├─────────────────────────┼────────────┼──────────────────┤
+│ Lowe's                  │ $   -54.25 │ Sun Jun 15, 2025 │
+│ Walmart                 │ $   -62.83 │ Tue Jun 17, 2025 │
+│ Petsmart                │ $   -35.40 │ Tue Jun 17, 2025 │
+│ Deposit                 │ $  1500.00 │ Wed Jun 18, 2025 │
+╰─────────────────────────┴────────────┴──────────────────╯
 ```
 
 !!! note

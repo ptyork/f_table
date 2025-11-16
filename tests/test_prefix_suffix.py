@@ -1,8 +1,12 @@
+"""Tests for prefix and suffix in ColDef formatting and width calculations."""
+
 import unittest
 from craftable import get_table, get_table_row, ColDef
 
 
 class TestPrefixSuffix(unittest.TestCase):
+    """Prefix/suffix handling in column definitions."""
+
     def test_basic_prefix(self):
         out = get_table([[100]], col_defs=["$(10)"])
         self.assertIn("$100", out)

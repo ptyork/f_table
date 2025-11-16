@@ -1,3 +1,5 @@
+"""Tests for get_table basic scenarios and styles."""
+
 import unittest
 from craftable import get_table, ColDef, ColDefList
 from craftable.styles.basic_screen_style import BasicScreenStyle
@@ -8,6 +10,8 @@ from craftable.styles.no_border_screen_style import NoBorderScreenStyle
 
 
 class TestGetTable(unittest.TestCase):
+    """Basic get_table rendering and options."""
+
     def test_empty_table_shows_no_data_message(self):
         result = get_table([])
         self.assertIn("No data to display", result)
@@ -45,7 +49,9 @@ class TestGetTable(unittest.TestCase):
     def test_none_values(self):
         data = [["Alice", None], [None, 25]]
         result = get_table(data)
-        self.assertIn("None", result)
+        # None values should render as empty strings by default
+        self.assertNotIn("None", result)
+        self.assertIn("Alice", result)
 
     def test_multiline_values(self):
         data = [["Line1\nLine2", "Normal"], ["SingleLine", "Multi\nLine\nValue"]]
@@ -110,7 +116,9 @@ class TestGetTable(unittest.TestCase):
     def test_table_with_lazy_end_true(self):
         data = [["Alice", 30], ["Bob", 25]]
         result = get_table(data, lazy_end=True, style=BasicScreenStyle())
-        self.assertTrue(all(line == line.rstrip() for line in result.split("\n") if line))
+        self.assertTrue(
+            all(line == line.rstrip() for line in result.split("\n") if line)
+        )
 
     def test_table_with_lazy_end_false(self):
         data = [["Alice", 30], ["Bob", 25]]

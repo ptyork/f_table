@@ -1,16 +1,18 @@
 from typing import (
     Any,
     Iterator,
-    List,
     Iterable,
     SupportsIndex,
     overload,
+    TypeAlias,
     Callable,
 )
 from os import get_terminal_size
 from dataclasses import dataclass
 import re
 from textwrap import wrap
+from pathlib import Path
+from typing import IO
 
 from .styles.table_style import TableStyle
 from .styles.no_border_screen_style import NoBorderScreenStyle
@@ -21,6 +23,14 @@ class InvalidTableError(ValueError): ...
 
 class InvalidColDefError(ValueError): ...
 
+
+# fn(value, row, col_idx)
+PreprocessorCallback: TypeAlias = Callable[[Any, list[Any], int], Any]
+PreprocessorCallbackList: TypeAlias = Iterable[PreprocessorCallback | None]
+
+# fn(original, text, row, col_idx)
+PostprocessorCallback: TypeAlias = Callable[[Any, str, list[Any], int], str]
+PostprocessorCallbackList: TypeAlias = Iterable[PostprocessorCallback | None]
 
 ###############################################################################
 # get_term_width
@@ -40,7 +50,7 @@ def get_term_width(max_term_width: int = MAX_REASONABLE_WIDTH):
 
 
 ###############################################################################
-# ColDef
+# FormatSpec
 ###############################################################################
 
 _FORMAT_SPEC_PATTERN = re.compile(
@@ -78,6 +88,11 @@ class FormatSpec:
         )
 
 
+###############################################################################
+# ColDef
+###############################################################################
+
+
 @dataclass
 class ColDef:
     width: int = 0
@@ -90,8 +105,9 @@ class ColDef:
     truncate: bool = False
     strict: bool = False
     format_spec: FormatSpec | None = None
-    preprocessor: Callable[[Any], Any] | None = None
-    postprocessor: Callable[[Any, str], str] | None = None
+    preprocessor: PreprocessorCallback | None = None
+    postprocessor: PostprocessorCallback | None = None
+    none_text: str = ""
 
     def set_width(self, value: int) -> None:
         self.width = value
@@ -103,17 +119,24 @@ class ColDef:
 
     def format(self, value: Any) -> str:
         # "Inner" format
+        if self.format_spec:
+            format_string = f"{{:{self.format_spec}}}"
+        else:
+            format_string = "{}"
+
+        # convert None to user-configurable text
+        val = value if value is not None else self.none_text
         try:
-            if self.format_spec:
-                format_string = f"{{:{self.format_spec}}}"
-            else:
-                format_string = "{}"
-            text = self.prefix + format_string.format(value) + self.suffix
+            text = format_string.format(val)
         except:  # noqa: E722
+            # On failure, fall back to string unless strict mode
             if self.strict:
                 raise
             else:
-                text = str(value)
+                text = str(val)
+        # add prefix and suffix if there is a value
+        if value is not None:
+            text = f"{self.prefix}{text}{self.suffix}"
 
         # "Outer" format
         return self.format_text(text)
@@ -121,19 +144,21 @@ class ColDef:
     # ------------------------------------------------------------------
     # Processor helpers
     # ------------------------------------------------------------------
-    def preprocess(self, value: Any) -> Any:
+    def preprocess(self, value: Any, row: list[Any], col_idx: int) -> Any:
         """Apply the column's preprocessor callback if present.
 
         Swallows exceptions and returns the original value on failure.
         """
         if self.preprocessor and callable(self.preprocessor):
             try:
-                return self.preprocessor(value)
+                return self.preprocessor(value, row, col_idx)
             except Exception:
                 return value
         return value
 
-    def postprocess(self, original_value: Any, text: str) -> str:
+    def postprocess(
+        self, original_value: Any, text: str, row: list[Any], col_idx: int
+    ) -> str:
         """Apply the column's postprocessor callback if present.
 
         Runs after width sizing, wrapping and alignment. Should not
@@ -142,7 +167,7 @@ class ColDef:
         """
         if self.postprocessor and callable(self.postprocessor):
             try:
-                return self.postprocessor(original_value, text)
+                return self.postprocessor(original_value, text, row, col_idx)
             except Exception:
                 return text
         return text
@@ -302,9 +327,31 @@ class ColDefList(list[ColDef]):
             self._cached_list = list(self)
         return self._cached_list
 
+    @staticmethod
+    def parse(specs: Iterable[str]) -> "ColDefList":
+        """Parse a list of format spec strings into a ColDefList.
+
+        This is a convenience for building per-column definitions from
+        plain strings. Each spec is parsed via ColDef.parse().
+
+        Example:
+            specs = ["A", ">8.2f", "^10"]
+            col_defs = ColDefList.parse(specs)
+
+        Args:
+            specs: Iterable of column definition strings.
+
+        Returns:
+            ColDefList: A list-like collection of ColDef objects.
+        """
+        col_defs = ColDefList()
+        for s in specs:
+            col_defs.append(ColDef.parse(s))
+        return col_defs
+
     def adjust_to_table(
         self,
-        table_data: List[List[Any]],
+        table_data: list[list[Any]],
         table_width: int,
         style: TableStyle,
         has_header: bool = False,
@@ -333,7 +380,7 @@ class ColDefList(list[ColDef]):
                         is_header = False
                         cell = str(row[col_idx])
                     else:
-                        value = col_def.preprocess(row[col_idx])
+                        value = col_def.preprocess(row[col_idx], row, col_idx)
                         cell = col_def.format(value)
                     max_width = max(max_width, len(cell))
 
@@ -387,24 +434,88 @@ class ColDefList(list[ColDef]):
 
     @staticmethod
     def assert_valid_table(table: Any) -> None:
-        if not isinstance(table, List):
+        if not isinstance(table, list):
             raise ValueError("Table data must be a list of rows")
         for row in table:
-            if not isinstance(row, List):
+            if not isinstance(row, list):
                 raise ValueError("Each row in a table must be a list of cells")
 
     @staticmethod
-    def for_table(table: List[List[Any]]) -> "ColDefList":
+    def for_table(table: list[list[Any]]) -> "ColDefList":
         ColDefList.assert_valid_table(table)
         max_cols = max([len(row) for row in table])
         col_defs = ColDefList([ColDef() for _ in range(max_cols)])
-        for col_idx in range(max_cols):
-            max_width = 0
-            for row in table:
-                if col_idx < len(row):
-                    max_width = max(max_width, len(str(row[col_idx])))
-            col_defs[col_idx].set_width(max_width)
         return col_defs
+
+
+###############################################################################
+# col_def helpers
+###############################################################################
+
+
+def _get_adjusted_col_defs(
+    all_rows: list[list[Any]],
+    style: TableStyle,
+    col_defs: Iterable[str] | Iterable[ColDef] | ColDefList | None = None,
+    table_width: int = 0,
+    preprocessors: PreprocessorCallbackList | None = None,
+    postprocessors: PostprocessorCallbackList | None = None,
+    none_text: str = "",
+) -> ColDefList:
+    # Normalize col_defs
+    if not col_defs:
+        _col_defs = ColDefList.for_table(all_rows)
+    elif isinstance(col_defs, ColDefList):
+        _col_defs = col_defs
+    else:
+        _col_defs = ColDefList(col_defs)
+
+    # Attach callbacks before width adjustment so preprocessors influence sizing
+    if preprocessors:
+        _pre_list = list(preprocessors)
+        for i, col_def in enumerate(_col_defs):
+            if i < len(_pre_list) and _pre_list[i] is not None:
+                col_def.preprocessor = _pre_list[i]
+    if postprocessors:
+        _post_list = list(postprocessors)
+        for i, col_def in enumerate(_col_defs):
+            if i < len(_post_list) and _post_list[i] is not None:
+                col_def.postprocessor = _post_list[i]
+
+    # Apply None display setting across columns
+    for col_def in _col_defs:
+        if not col_def.none_text:
+            col_def.none_text = none_text
+
+    # Adjust column definitions to match table data
+    _col_defs.adjust_to_table(all_rows, table_width, style, has_header=True)
+
+    return _col_defs
+
+
+def _generate_header_defs(
+    header_row: Iterable[Any] | None,
+    header_defs: Iterable[str] | Iterable[ColDef] | ColDefList | None,
+    col_defs: ColDefList,
+) -> ColDefList | None:
+    # generate viable header definitions
+    _header_defs = None
+    if header_row:
+        # generate default header defs if not supplied
+        _header_defs = ColDefList()
+        for col_def in col_defs:
+            _header_defs.append(ColDef(width=col_def.width, align="^"))
+
+        # if the defs are supplied, we only support alignment so just extract that
+        if header_defs:
+            _header_defs = ColDefList(header_defs)
+            for col_idx in range(len(col_defs)):
+                if col_idx < len(_header_defs):
+                    header_def = _header_defs[col_idx]
+                    if header_def.align:
+                        _header_defs[col_idx].align = header_def.align
+
+    return _header_defs
 
 
 ###############################################################################
@@ -413,9 +524,9 @@ class ColDefList(list[ColDef]):
 
 
 def _get_table_row(
-    values: List[Any],
+    values: list[Any],
+    col_defs: ColDefList,
     style: TableStyle = NoBorderScreenStyle(),
-    col_defs: List[str] | List[ColDef] | ColDefList | None = None,
     table_width: int = 0,
     lazy_end: bool = False,
     is_header: bool = False,
@@ -423,25 +534,17 @@ def _get_table_row(
     if not table_width and style.terminal_style:
         table_width = get_term_width()
 
-    if not col_defs:
-        _col_defs = ColDefList.for_table([values])
-    elif isinstance(col_defs, ColDefList):
-        _col_defs = col_defs
-    else:
-        _col_defs = ColDefList(col_defs)
-    _col_defs.adjust_to_table([values], table_width, style)
-
     # Cache _col_defs to a native list. Even though ColDefList is a subclass of
     # list, it has method call overhead on each access. Using the "bare" list is
     # slightly faster, which adds up for large tables.
-    _cached_col_defs = _col_defs.as_list()
+    _cached_col_defs = col_defs.as_list()
 
     col_count = len(values)
 
     formatted_values = []
     for col_idx in range(col_count):
         col_def = _cached_col_defs[col_idx]
-        col_val = col_def.preprocess(values[col_idx])
+        col_val = col_def.preprocess(values[col_idx], values, col_idx)
         text = col_def.format(col_val)
         formatted_values.append(text)
 
@@ -477,7 +580,7 @@ def _get_table_row(
         row_cells = []
         for col_idx, cell in enumerate(formatted_values):
             col_def = _cached_col_defs[col_idx]
-            cell = col_def.postprocess(values[col_idx], cell)
+            cell = col_def.postprocess(values[col_idx], cell, values, col_idx)
             row_cells.append(cell)
         wrapped_rows = [row_cells]
     else:
@@ -492,7 +595,7 @@ def _get_table_row(
                 else:
                     text = ""
                 text = col_def.format_text(text)
-                text = col_def.postprocess(values[col_idx], text)
+                text = col_def.postprocess(values[col_idx], text, values, col_idx)
                 row.append(text)
             wrapped_rows.append(row)
 
@@ -517,49 +620,67 @@ def _get_table_row(
 
 
 def get_table_row(
-    values: List[Any],
+    values: list[Any],
     style: TableStyle = NoBorderScreenStyle(),
-    col_defs: List[str] | List[ColDef] | ColDefList | None = None,
+    col_defs: list[str] | list[ColDef] | ColDefList | None = None,
     table_width: int = 0,
     lazy_end: bool = True,
-    preprocessors: List[Callable[[Any], Any] | None] | None = None,
-    postprocessors: List[Callable[[Any, str], str] | None] | None = None,
+    preprocessors: PreprocessorCallbackList | None = None,
+    postprocessors: PostprocessorCallbackList | None = None,
+    none_text: str = "",
 ) -> str:
     """
     Generate a string for a single table row.
 
     Parameters:
-        values: A list of values.
-        style: A TableStyle object defining the table's appearance.
-        col_defs: Optional column definitions to control width, alignment, etc.
-        table_width: Desired total width of the table. If 0, uses terminal width          if style.terminal_style is True.
-        lazy_end: If True, omits the right border of the table.
+        values:
+            A list of values.
+        style:
+            (optional) A TableStyle object defining the table's appearance.
+            Defaults to NoBorderScreenStyle.
+        col_defs:
+            (optional) Column definitions to control width, alignment, etc. If
+            not provided, generates default left-aligned columns based on values.
+        table_width:
+            (optional) Desired total width of the table. If 0, uses terminal
+            width when style.terminal_style is True. Defaults to 0.
+        lazy_end:
+            (optional) If True, omits the right border of the table. Defaults
+            to True.
         preprocessors:
-            Optional: List of per-column callbacks applied before formatting and sizing.
-            Each entry should be a callable of the form fn(value) -> value.
+            (optional) List of per-column callbacks applied before formatting
+            and sizing. Each entry should be a callable of the form
+            ``fn(value, row, col_idx) -> value``. Defaults to None.
         postprocessors:
-            Optional: List of per-column callbacks applied after formatting, sizing, and
-            wrapping. Each entry should be a callable of the form fn(original_value, text)
-            -> str.
+            (optional) List of per-column callbacks applied after formatting,
+            sizing, and wrapping. Each entry should be a callable of the form
+            ``fn(original_value, text, row, col_idx) -> str``. Defaults to None.
+        none_text:
+            (optional) Text to display for None values. Defaults to empty
+            string.
+
+    Behavior:
+        - If col_defs is not provided, generates default left-aligned column
+          definitions based on the values.
+        - Applies preprocessors to transform values before formatting.
+        - Formats each value according to its column definition.
+        - Applies postprocessors to transform formatted text.
+        - Renders the row using the specified table style.
+
+    Returns:
+        A formatted string representing a single table row, including borders
+        and cell padding as defined by the style.
     """
-    # Normalize col_defs
-    if not col_defs:
-        _col_defs = ColDefList.for_table([values])
-    elif isinstance(col_defs, ColDefList):
-        _col_defs = col_defs
-    else:
-        _col_defs = ColDefList(col_defs)
 
-    # Attach callbacks
-    if preprocessors:
-        for i, col_def in enumerate(_col_defs):
-            if i < len(preprocessors) and preprocessors[i] is not None:
-                col_def.preprocessor = preprocessors[i]
-    if postprocessors:
-        for i, col_def in enumerate(_col_defs):
-            if i < len(postprocessors) and postprocessors[i] is not None:
-                col_def.postprocessor = postprocessors[i]
-
+    _col_defs = _get_adjusted_col_defs(
+        all_rows=[values],
+        style=style,
+        col_defs=col_defs,
+        table_width=table_width,
+        preprocessors=preprocessors,
+        postprocessors=postprocessors,
+        none_text=none_text,
+    )
     return _get_table_row(
         values=values,
         style=style,
@@ -576,10 +697,10 @@ def get_table_row(
 
 
 def get_table_header(
-    header_cols: List[str],
+    header_cols: list[str],
     style: TableStyle = NoBorderScreenStyle(),
-    header_defs: List[str | ColDef] | ColDefList | None = None,
-    col_defs: List[str] | List[ColDef] | ColDefList | None = None,
+    header_defs: Iterable[str] | Iterable[ColDef] | ColDefList | None = None,
+    col_defs: Iterable[str] | Iterable[ColDef] | ColDefList | None = None,
     table_width: int = 0,
     lazy_end: bool = True,
 ) -> str:
@@ -590,31 +711,45 @@ def get_table_header(
         header_cols:
             A list of header column names.
         style:
-            A TableStyle object defining the table's appearance.
+            (optional) A TableStyle object defining the table's appearance.
+            Defaults to NoBorderScreenStyle.
         header_defs:
-            Optional column definitions for the header row.
+            (optional) Column definitions for the header row. If not provided,
+            defaults to column definitions generated from header_cols.
         col_defs:
-            Optional column definitions for the rest of the table rows. Only
+            (optional) Column definitions for the rest of the table rows. Only
             required for styles that have an alignment character (e.g.,
-            Markdown).
+            Markdown). If not provided, uses the same as header_defs.
         table_width:
-            Desired total width of the table. Will be automatically calculated
-            if not
+            (optional) Desired total width of the table. Will be automatically
+            calculated if not provided. Defaults to 0.
         lazy_end:
-            If True, omits the right border of the table.
+            (optional) If True, omits the right border of the table. Defaults
+            to True.
 
+    Behavior:
+        - If header_defs is not provided, generates default column definitions from header_cols.
+        - If col_defs is not provided, uses a copy of header_defs.
+        - Adjusts column definitions to fit the specified or calculated table width.
+        - Renders the top border if the style includes one.
+        - Renders the header row with the specified header definitions.
+        - Renders the bottom border (separator between header and data rows).
+        - For styles with alignment characters (e.g., Markdown), uses col_defs to determine
+          column alignment indicators in the separator line.
 
+    Returns:
+        A formatted string representing the table header, including top border,
+        header row, and header separator line as defined by the style.
     """
     if not table_width and style.terminal_style:
         table_width = get_term_width()
 
-    if not header_defs:
-        _header_defs = ColDefList.for_table([header_cols])
-    elif isinstance(header_defs, ColDefList):
-        _header_defs = header_defs
-    else:
-        _header_defs = ColDefList(header_defs)
-    _header_defs.adjust_to_table([header_cols], table_width, style)
+    _header_defs = _get_adjusted_col_defs(
+        all_rows=[header_cols],
+        style=style,
+        col_defs=header_defs,
+        table_width=table_width,
+    )
 
     if not col_defs:
         _col_defs = _header_defs.copy()
@@ -689,8 +824,9 @@ def get_table(
     table_width: int = 0,
     lazy_end: bool = False,
     separate_rows: bool = False,
-    preprocessors: List[Callable[[Any], Any] | None] | None = None,
-    postprocessors: List[Callable[[Any, str], str] | None] | None = None,
+    preprocessors: PreprocessorCallbackList | None = None,
+    postprocessors: PostprocessorCallbackList | None = None,
+    none_text: str = "",
 ) -> str:
     """
     Primary function called to generate a table string.
@@ -701,33 +837,68 @@ def get_table(
             is required. However, a default message of "No data to display" will
             be shown if the collection is empty or None.
         header_row:
-            Optional: a collection of header column names.
+            (optional) A collection of header column names. Defaults to None.
         style:
-            Optional: A TableStyle object defining the table's appearance.
+            (optional) A TableStyle object defining the table's appearance.
             Defaults to NoBorderScreenStyle.
         col_defs:
-            Optional: A collection of column definitions to control width,
-            alignment, etc. Defaults to left aligned, auto-sized columns.
+            (optional) A collection of column definitions to control width,
+            alignment, etc. for data rows. Defaults to left aligned, auto-sized
+            columns.
         header_defs:
-            Optional: A collection of column definitions for the header row.
-            Defaults to the same as col_defs.
+            (optional) A collection of column definitions for the header row. If
+            not provided, defaults to center-aligned columns with the same
+            widths as col_defs.
         table_width:
-            Optional: Desired total width of the table. Will be automatically
-            calculated if not specified.
+            (optional) Desired total width of the table. Will be automatically
+            calculated if not specified. Defaults to 0.
         lazy_end:
-            Optional: If True, omits the right border of the table. Defaults to
+            (optional) If True, omits the right border of the table. Defaults to
             False.
         separate_rows:
-            Optional: If True, adds a separator line between each row. Defaults
+            (optional) If True, adds a separator line between each row. Defaults
             to False.
         preprocessors:
-            Optional: List of per-column callbacks applied before formatting and sizing.
-            Each entry should be a callable of the form fn(value) -> value.
+            (optional) List of per-column callbacks applied before formatting
+            and sizing. Each entry should be a callable of the form
+            ``fn(value, row, col_idx) -> value``. Defaults to None.
         postprocessors:
-            Optional: List of per-column callbacks applied after formatting, sizing, and
-            wrapping. Each entry should be a callable of the form fn(original_value, text)
-            -> str.
+            (optional) List of per-column callbacks applied after formatting,
+            sizing, and wrapping. Each entry should be a callable of the form
+            ``fn(original_value, text, row, col_idx) -> str``. Defaults to None.
+        none_text:
+            (optional) Text to display for None values. Defaults to empty
+            string.
+
+    Behavior:
+        - Validates that the style supports string output (raises ValueError if
+          not).
+        - If value_rows is empty, returns a table with "No data to display"
+          message.
+        - Converts value_rows to a list of lists for consistent processing.
+        - Calculates column widths based on content and table_width constraints.
+        - Generates column definitions (col_defs) from content if not provided.
+        - Generates header definitions (header_defs) from col_defs if not
+          provided, defaulting to center-aligned headers.
+        - Renders the table header if header_row is provided or
+          style.force_header is True.
+        - Renders each data row, optionally adding separator lines between rows
+          if separate_rows is True.
+        - Renders the bottom border if the style includes one.
+        - Applies preprocessors before formatting and postprocessors after
+          formatting.
+
+    Returns:
+        A formatted string representing the complete table, including all
+        borders, header, data rows, and separators as defined by the style.
     """
+    # Validate that style supports string output for get_table
+    if not getattr(style, "string_output", True):
+        raise ValueError(
+            f"{style.__class__.__name__} does not support string output. "
+            "Use export_table() instead."
+        )
+
     if not value_rows:
         return get_table(
             [["No data to display"]],
@@ -743,8 +914,8 @@ def get_table(
 
     # convert / copy the rows to a list of lists. Slight overhead but it helps
     # with consistency and prevents accidentally modifying the caller's data.
-    _value_rows: List[List[Any]] = [list(row) for row in value_rows]
-    _header_row: List[Any] | None = None
+    _value_rows: list[list[Any]] = [list(row) for row in value_rows]
+    _header_row: list[Any] | None = None
     if header_row:
         _header_row = [str(col) for col in header_row]
 
@@ -755,45 +926,29 @@ def get_table(
 
     max_cols = max(len(row) for row in all_rows)
 
-    # Normalize col_defs
-    if not col_defs:
-        _col_defs = ColDefList.for_table(all_rows)
-    elif isinstance(col_defs, ColDefList):
-        _col_defs = col_defs
-    else:
-        _col_defs = ColDefList(col_defs)
-
-    # Attach callbacks before width adjustment so preprocessors influence sizing
-    if preprocessors:
-        for i, col_def in enumerate(_col_defs):
-            if i < len(preprocessors) and preprocessors[i] is not None:
-                col_def.preprocessor = preprocessors[i]
-    if postprocessors:
-        for i, col_def in enumerate(_col_defs):
-            if i < len(postprocessors) and postprocessors[i] is not None:
-                col_def.postprocessor = postprocessors[i]
-
-    # Adjust column definitions to match table data
-    _col_defs.adjust_to_table(all_rows, table_width, style, has_header=True)
+    _col_defs = _get_adjusted_col_defs(
+        all_rows=all_rows,
+        style=style,
+        col_defs=col_defs,
+        table_width=table_width,
+        preprocessors=preprocessors,
+        postprocessors=postprocessors,
+        none_text=none_text,
+    )
 
     if not header_row and style.force_header:
         header_row = [""] * max_cols
 
-    # generate viable header definitions
-    real_header_defs = None
-    if header_row:
-        real_header_defs = ColDefList()
-        for col_def in _col_defs:
-            real_header_defs.append(ColDef(width=col_def.width, align="^"))
+    _header_defs = _generate_header_defs(
+        header_row=_header_row,
+        header_defs=header_defs,
+        col_defs=_col_defs,
+    )
 
-        # if the defs are supplied, we only support alignment
-        if header_defs:
-            _header_defs = ColDefList(header_defs)
-            for col_idx in range(len(_col_defs)):
-                if col_idx < len(_header_defs):
-                    header_def = _header_defs[col_idx]
-                    if header_def.align:
-                        real_header_defs[col_idx].align = header_def.align
+    # Delegate to a custom renderer when the style provides one (e.g., HTML/LaTeX)
+    renderer = getattr(style, "render_table", None)
+    if callable(renderer):
+        return str(renderer(_value_rows, _header_row, _col_defs, _header_defs))
 
     # Generate header and rows
     output_rows = []
@@ -805,7 +960,7 @@ def get_table(
         row = get_table_header(
             header_cols=_header_row,
             style=style,
-            header_defs=real_header_defs,
+            header_defs=_header_defs,
             col_defs=_col_defs,
             table_width=table_width,
             lazy_end=lazy_end,
@@ -863,3 +1018,157 @@ def get_table(
         output_rows.append(border)
 
     return "\n".join(output_rows)
+
+
+###############################################################################
+# export_table
+###############################################################################
+
+
+def export_table(
+    value_rows: Iterable[Iterable[Any]],
+    header_row: Iterable[Any] | None = None,
+    style: TableStyle = NoBorderScreenStyle(),
+    col_defs: Iterable[str] | Iterable[ColDef] | ColDefList | None = None,
+    header_defs: Iterable[str] | Iterable[ColDef] | ColDefList | None = None,
+    preprocessors: PreprocessorCallbackList | None = None,
+    postprocessors: PostprocessorCallbackList | None = None,
+    none_text: str = "",
+    file: str | Path | IO[str] | IO[bytes] | None = None,
+    encoding: str = "utf-8",
+) -> str | Path | None:
+    """
+    Render the table and optionally write it to a file.
+
+    Parameters:
+        value_rows:
+            A collection of rows, where each row is a collection of values.
+        header_row:
+            (optional) A collection of header column names. Defaults to None.
+        style:
+            (optional) A TableStyle object defining the table's appearance and
+            export format. Defaults to NoBorderScreenStyle.
+        col_defs:
+            (optional) A collection of column definitions to control width,
+            alignment, formatting, etc. for data rows. Defaults to left aligned,
+            auto-sized columns.
+        header_defs:
+            (optional) A collection of column definitions for the header row. If
+            not provided, defaults to center-aligned columns with the same
+            widths as col_defs. Used to control header alignment in exported
+            files.
+        preprocessors:
+            (optional) List of per-column callbacks applied before formatting
+            and sizing. Each entry should be a callable of the form
+            ``fn(value, row, col_idx) -> value``. Defaults to None.
+        postprocessors:
+            (optional) List of per-column callbacks applied after formatting,
+            sizing, and wrapping. Each entry should be a callable of the form
+            ``fn(original_value, text, row, col_idx) -> str``. Defaults to None.
+        none_text:
+            (optional) Text to display for None values. Defaults to empty
+            string.
+        file:
+            (optional) File path (str or Path) or file-like object (IO) to write
+            the output. If None, returns the rendered content as a string.
+            Defaults to None.
+        encoding:
+            (optional) Character encoding for text output. Only used when
+            writing text content to a file path. Defaults to "utf-8".
+
+    Behavior:
+        - If the style provides a write_table(..., file) method and a file is given,
+          delegate writing to the style and return the provided file path/handle.
+        - Else, if the style provides render_table(...), render to a string (or bytes).
+          If a file is provided, write it; otherwise return the rendered content.
+        - Else, fall back to craftable's text renderer via get_table().
+
+    Returns:
+        - If file is provided as a path (str or Path), returns the file path for convenience.
+        - If file is a file-like object, returns None after writing.
+        - Otherwise, returns the rendered content as a string.
+    """
+
+    # Normalize inputs similar to get_table()
+    _value_rows: list[list[Any]] = [list(row) for row in value_rows]
+    _header_row: list[Any] | None = None
+    if header_row:
+        _header_row = [str(col) for col in header_row]
+
+    all_rows = _value_rows.copy()
+    if _header_row:
+        all_rows.insert(0, _header_row)
+
+    _col_defs = _get_adjusted_col_defs(
+        all_rows=all_rows,
+        style=style,
+        col_defs=col_defs,
+        preprocessors=preprocessors,
+        postprocessors=postprocessors,
+        none_text=none_text,
+    )
+
+    max_cols = max(len(row) for row in all_rows)
+
+    if not header_row and style.force_header:
+        header_row = [""] * max_cols
+
+    _header_defs = _generate_header_defs(
+        header_row=_header_row,
+        header_defs=header_defs,
+        col_defs=_col_defs,
+    )
+
+    # Prefer explicit writer when available
+    writer = getattr(style, "write_table", None)
+    if callable(writer) and file is not None:
+        writer(_value_rows, _header_row, _col_defs, _header_defs, file)
+        return Path(file) if isinstance(file, (str, Path)) else None
+
+    # Otherwise render content and optionally write
+    renderer = getattr(style, "render_table", None)
+    if callable(renderer):
+        content = renderer(_value_rows, _header_row, _col_defs)
+        if file is None:
+            return str(content)
+        # Decide binary vs text write
+        if isinstance(content, (bytes, bytearray)):
+            if isinstance(file, (str, Path)):
+                with open(file, "wb") as f:
+                    f.write(content)
+                return Path(file)
+            else:
+                # Assume binary-capable IO
+                file.write(content)  # type: ignore[arg-type]
+                return None
+        else:
+            # Text content
+            if isinstance(file, (str, Path)):
+                with open(file, "w", encoding=encoding) as f:
+                    f.write(str(content))
+                return Path(file)
+            else:
+                # Assume text-capable IO
+                file.write(str(content))  # type: ignore[arg-type]
+                return None
+
+    # Fallback to core text renderer
+    content = get_table(
+        value_rows,
+        header_row=header_row,
+        style=style,
+        col_defs=_col_defs,
+        header_defs=_header_defs,
+        preprocessors=preprocessors,
+        postprocessors=postprocessors,
+        none_text=none_text,
+    )
+    if file is None:
+        return content
+    if isinstance(file, (str, Path)):
+        with open(file, "w", encoding=encoding) as f:
+            f.write(content)
+        return Path(file)
+    else:
+        file.write(content)  # type: ignore[arg-type]
+        return None

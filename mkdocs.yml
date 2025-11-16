@@ -3,13 +3,17 @@ nav:
     - index.md
     - getting-started.md
     - usage.md
+    - adapters.md
     - formatting.md
     - styles.md
+    - recipes.md
   - Reference:
+    - references/index.md
     - references/functions.md
     - references/classes.md
     - references/exceptions.md
-    - references/styles.md
+    - references/text_styles.md
+    - references/doc_styles.md
 
 site_name: craftable - Simple terminal tables using format strings
 site_url: https://ptyork.github.io/craftable/

@@ -1,8 +1,12 @@
+"""Unit tests for ColDefList creation, slicing, and mutation."""
+
 import unittest
 from craftable import ColDefList, ColDef
 
 
 class TestColDefList(unittest.TestCase):
+    """ColDefList API conformance and behaviors."""
+
     def test_create_and_slice(self):
         cds = ColDefList(["<10", ">15", "^20"])
         self.assertEqual(cds[0].width, 10)
@@ -23,7 +27,7 @@ class TestColDefList(unittest.TestCase):
         self.assertEqual(cds[0].width, 25)
 
     def test_getitem_and_setitem(self):
-        cds = ColDefList(["<10", ">15"]) 
+        cds = ColDefList(["<10", ">15"])
         self.assertEqual(cds[0].width, 10)
         cds[0] = "<20"
         self.assertEqual(cds[0].width, 20)

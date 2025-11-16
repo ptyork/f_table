@@ -1,9 +1,13 @@
+"""Tests for get_table_header rendering and alignment controls."""
+
 import unittest
 from craftable import get_table_header
 from craftable.styles.basic_screen_style import BasicScreenStyle
 
 
 class TestGetTableHeader(unittest.TestCase):
+    """Header rendering tests for various styles and options."""
+
     def test_simple_header(self):
         out = get_table_header(["Name", "Age", "City"])
         self.assertIn("City", out)
@@ -30,5 +34,7 @@ class TestGetTableHeader(unittest.TestCase):
         self.assertTrue(all(line == line.rstrip() for line in out.split("\n") if line))
 
     def test_header_lazy_end_false(self):
-        out = get_table_header(["Col1", "Col2"], lazy_end=False, style=BasicScreenStyle())
+        out = get_table_header(
+            ["Col1", "Col2"], lazy_end=False, style=BasicScreenStyle()
+        )
         self.assertIn("Col1", out)

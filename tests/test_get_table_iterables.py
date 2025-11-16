@@ -1,10 +1,18 @@
+"""Tests for iterable inputs to get_table (tuples, generators, map/filter/zip)."""
+
 import unittest
 from craftable import get_table
 
 
 class TestIterableTypes(unittest.TestCase):
+    """Ensure iterable sources are handled uniformly by get_table."""
+
     def test_values_as_tuples(self):
-        data = [("Alice", 30, "Engineer"), ("Bob", 25, "Designer"), ("Charlie", 35, "Manager")]
+        data = [
+            ("Alice", 30, "Engineer"),
+            ("Bob", 25, "Designer"),
+            ("Charlie", 35, "Manager"),
+        ]
         self.assertIn("Alice", get_table(data))
 
     def test_generator_for_values(self):
@@ -15,6 +23,7 @@ class TestIterableTypes(unittest.TestCase):
         def gen():
             for n, a in [("Alice", 30), ("Bob", 25)]:
                 yield (n, a, a * 1000)
+
         out = get_table(gen(), header_row=("Name", "Age", "Salary"))
         self.assertIn("30000", out)
 
@@ -45,5 +54,6 @@ class TestIterableTypes(unittest.TestCase):
         def gen():
             yield ["Alice", 30]
             yield ["Bob", 25]
+
         out = get_table(gen())
         self.assertIn("Bob", out)

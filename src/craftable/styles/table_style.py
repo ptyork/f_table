@@ -7,7 +7,7 @@ from .box_chars import BoxChars
 
 class TableStyle(ABC):
     """Abstract base class for table styles.
-    
+
     Defines all the visual attributes that control how a table is rendered,
     including borders, delimiters, padding, and special characters.
     """
@@ -16,6 +16,7 @@ class TableStyle(ABC):
         self.top_border = True
         self.bottom_border = True
         self.terminal_style = True
+        self.string_output = True  # False for binary formats (DOCX/XLSX/ODF/RTF)
         self.allow_lazy_header = True
         self.force_header = False
         self.align_char = None

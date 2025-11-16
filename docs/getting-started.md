@@ -51,7 +51,8 @@ Output:
 Add a `header_row` and try a different look with the `style` parameter:
 
 ```python
-from craftable import get_table, BasicScreenStyle
+from craftable import get_table
+from craftable.styles import BasicScreenStyle
 
 rows = [
     ["Alice", 30, "Engineer"],

@@ -1,8 +1,13 @@
+"""Tests for get_table_row helpers and formatting flags."""
+
 import unittest
-from craftable import get_table_row, BasicScreenStyle
+from craftable import get_table_row
+from craftable.styles import BasicScreenStyle
 
 
 class TestGetTableRow(unittest.TestCase):
+    """Row-level rendering tests for get_table_row()."""
+
     def test_simple_row(self):
         out = get_table_row(["Alice", 30, "Engineer"])
         self.assertIn("Engineer", out)
@@ -26,4 +31,6 @@ class TestGetTableRow(unittest.TestCase):
 
     def test_row_with_none_value(self):
         out = get_table_row([None, "Value"])
-        self.assertIn("None", out)
+        # None values should render as empty strings by default
+        self.assertNotIn("None", out)
+        self.assertIn("Value", out)
