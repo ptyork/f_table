@@ -88,6 +88,63 @@ Example output (colors removed for clarity):
 ```
 
 
+## Render an accounting ledger  {#accounting-ledger}
+
+Use a post-processor to transform standard currency into the specialized
+accounting format.
+
+```python
+from datetime import date
+import re
+from craftable import get_table
+
+# Define the format definition as well as a regular expression pattern to select
+# only the number and sign. Replace symbols, separators, and decimal as needed.
+accounting_def = f"<$ (>,.2f) "
+#                             separator  v        v  decimal
+padded_num = re.compile(r'[- ]?(\d{1,3}(\,\d{3})*\.\d{2}) ')
+
+def accounting_format(original, text, row, col_idx):
+    if original <= 0:
+        print(text)
+        match = re.search(padded_num, text)
+        print(match)
+        if match:
+            full_text = match.group(0)
+            num_part = match.group(1)
+            if original < 0:
+                new_text = f"({num_part})"
+            else:
+                new_text = (" " * (len(full_text) - 2)) + "- "
+            return re.sub(padded_num, new_text, text)
+    return text
+
+data = [
+    [ date(2025, 6, 15), "Lowe's", -54.25, 98.23 ],
+    [ date(2025, 6, 17), "Walmart", -62.83, 35.4 ],
+    [ date(2025, 6, 17), "Petsmart", -35.4, 0 ],
+    [ date(2025, 6, 18), "Deposit", 1500, 1500 ],
+]
+
+print(get_table(
+    data,
+    header_row=["Date", "Description", "Amount", "Balance"],
+    col_defs=["", "", accounting_def, accounting_def],
+    postprocessors=[None, None, accounting_format, accounting_format],
+))
+```
+
+Example output:
+
+```
+    Date    │ Description │    Amount   │   Balance
+────────────┼─────────────┼─────────────┼─────────────
+ 2025-06-15 │ Lowe's      │ $   (54.25) │ $    98.23
+ 2025-06-17 │ Walmart     │ $   (62.83) │ $    35.40
+ 2025-06-17 │ Petsmart    │ $   (35.40) │ $        -
+ 2025-06-18 │ Deposit     │ $ 1,500.00  │ $ 1,500.00
+```
+
 ## Build a progress/status indicator table {#icons}
 
 Use Unicode characters and postprocessors for visual status:
@@ -174,6 +231,65 @@ Example output (bold removed for clarity):
  Launch               │ 2025-10-16   
  Review               │ 2025-11-15   
 ```
+
+
+## Parse fuzzy date strings with dateparser {#dateparser}
+
+Use the dateparser library to parse various date string formats and format them
+consistently with a preprocessor:
+
+```python
+from craftable import get_table
+
+# Various date formats that dateparser can handle
+appointments = [
+    ["Team standup", "tomorrow at 9am"],
+    ["Client demo", "next Friday"],
+    ["Code review", "in 3 days"],
+    ["Release", "2025-12-01"],
+    ["Conference", "Jan 15, 2026"],
+]
+
+def parse_date_string(val, row, col_idx):
+    """Parse string dates with dateparser and format as YYYY-MM-DD."""
+    if not isinstance(val, str):
+        return val
+    
+    try:
+        import dateparser
+        parsed = dateparser.parse(val)
+        if parsed:
+            return parsed.strftime("%Y-%m-%d")
+    except ImportError:
+        # dateparser not available, return original
+        pass
+    except Exception:
+        # Parsing failed, return original
+        pass
+    
+    return val
+
+print(get_table(
+    appointments,
+    header_row=["Event", "Date"],
+    col_defs=["<20", "<12"],
+    preprocessors=[None, parse_date_string],
+))
+```
+
+Example output (dates relative to execution time):
+
+```text
+       Event         │     Date     
+─────────────────────┼──────────────
+ Team standup        │ 2025-11-17   
+ Client demo         │ 2025-11-21   
+ Code review         │ 2025-11-19   
+ Release             │ 2025-12-01   
+ Conference          │ 2026-01-15   
+```
+
+**Note:** Requires the `dateparser` package: `pip install dateparser`
 
 
 ## Generate a multi-level grouped summary {#hierarchy}
@@ -474,4 +590,91 @@ Example output:
  Frontend UI         │ ██████░░░░ 60%
  Database migrations │ ██████████ 100%
  Documentation       │ ████░░░░░░ 45%
+```
+
+
+## Read a CSV and select columns {#csv-select}
+
+Load a CSV with Python's standard library and build a table using only a subset of columns. This example also formats salary with a left-aligned "$" prefix and formats a percentage column using the normal f-string `%` format type.
+
+```python
+import csv
+from craftable import get_table
+from craftable.adapters import from_dicts
+
+# employees.csv (example with interleaved extra columns):
+# id,name,dept,manager,salary,currency,bonus_pct,notes,location
+# 101,Alice,Engineering,Elaine,120000,USD,0.10,Senior engineer,NYC
+# 102,Bob,Sales,Marco,85000,USD,0.05,Top performer,Austin
+# 103,Carol,Support,Janet,65000,USD,0.07,,Remote
+
+def to_float(val, *_):  # note the *_ to accept unused extra args
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return val
+
+with open("employees.csv", newline="", encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+
+    # Keep only the columns we care about, in the order we want
+    desired = ["name", "dept", "salary", "bonus_pct"]
+    rows, headers = from_dicts(reader, columns=desired)
+
+# Optionally, prettify headers
+headers = [h.replace("_", " ").title() for h in headers]
+
+print(get_table(
+    rows,
+    header_row=headers,
+    col_defs=[
+        "",               # name
+        "",               # dept
+        "<$ (>,.0f)",     # salary: left-aligned $ with right-aligned, grouped value
+        "(>.1%)",         # bonus_pct: normal f-string percentage formatting
+    ],
+    preprocessors=[None, None, to_float, to_float],
+))
+```
+
+Example output:
+
+```text
+ Name                 │ Dept        │ Salary        │ bonus_pct
+──────────────────────┼─────────────┼───────────────┼──────────
+ Alice                │ Engineering │ $       120,000│    10.0%
+ Bob                  │ Sales       │ $        85,000│     5.0%
+ Carol                │ Support     │ $        65,000│     7.0%
+```
+
+### Pandas variant
+
+Do the same selection and formatting using pandas. Pandas automatically coerces
+numbers when reading files, eliminating the need for the preprocessor callback.
+
+```python
+# Requires pandas (optional dependency)
+import pandas as pd
+from craftable import get_table
+from craftable.adapters import from_dataframe
+
+# Same CSV as above (with interleaved extra columns)
+df = pd.read_csv("employees.csv")
+
+desired = ["name", "dept", "salary", "bonus_pct"]
+rows, headers = from_dataframe(df, columns=desired)
+
+# Optionally, prettify headers
+headers = [h.replace("_", " ").title() for h in headers]
+
+print(get_table(
+    rows,
+    header_row=headers,
+    col_defs=[
+        "",               # name
+        "",               # dept
+        "<$ (>,.0f)",     # salary: left-aligned $ with right-aligned, grouped value
+        "(>.1%)",         # bonus_pct: normal f-string percentage formatting
+    ],
+))
 ```

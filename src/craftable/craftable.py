@@ -177,9 +177,9 @@ class ColDef:
             text = text[: self.width - 1] + "…"
 
         if self.align == "^":
-            text = text.strip().center(self.width)
+            text = text.center(self.width)
         elif self.align == ">":
-            text = text.strip().rjust(self.width)
+            text = text.rjust(self.width)
         else:
             text = text.ljust(self.width)
 

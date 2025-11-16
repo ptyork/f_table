@@ -313,7 +313,7 @@ Results:
 ╰────────────────┴──────────┴──────────╯
 ```
 
-## Header definitions
+## Header Definitions
 
 Header alignment can be controlled separately via `header_defs`. These will
 accept all of the components of a column definition, however, only alignment
@@ -337,6 +337,7 @@ This centers "Name" while left-aligning the data below it.
 
 If no header_defs are provided, the headers will be centered.
 
+
 ## Preprocessors and Postprocessors
 
 Use per-column callbacks to transform values before formatting (preprocessors)
@@ -350,7 +351,7 @@ Definitions:
 
 
   - Postprocessor: `fn(original_value, text) -> str`
-    
+
 Example:
 
 ```python
@@ -417,3 +418,43 @@ Guidelines:
 - Exceptions in callbacks are caught (unless strict formatting already raises).
 - Postprocessors shouldn't alter visible width; avoid padding changes.
 
+
+## Common Format Strings
+
+The following are common formatting types, their characteristics, and their
+uses, as well as an example format string that can be used to render them (if
+possible).
+
+### Currency: `$ (,.2f)`
+
+Displays monetary values with commas for thousands separators and two decimal
+places. Negative numbers display with minus sign by default. Replace `$` with
+localized currency symbol as appropriate. Use with or without the space between
+the symbol and the left paren.
+
+### Aligned Currency: `<$(,.2f)`
+
+Same as above but left-align the currency symbol.
+
+### Percentage: `.1%` or `.0%`
+
+Displays numbers as a percentage by multiplying the value by 100 and adding a
+percent sign (e.g., 0.15 becomes 15.0%).
+
+### Scientific: `.2e`
+
+Displays numbers in exponential notation, useful for very large or very small
+numbers (e.g., 23976986 becomes 2.40e+07).
+
+### Standard: `,.0f`
+
+Displays numbers with commas as thousands separators and no decimal places.
+Handles negative numbers with minus sign.
+
+### Accounting: _postprocess_
+
+Similar to currency but follows accounting conventions. Use a postprocessor to
+display negative numbers in parentheses and format consistently.
+
+See the [accounting ledger recipe](recipes.md#accounting-ledger) for an example
+of how to use postprocessing to format numbers using accounting standards.

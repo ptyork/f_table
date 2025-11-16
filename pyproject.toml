@@ -1,6 +1,6 @@
 [project]
 name = "craftable"
-version = "0.2.0"
+version = "0.2.1"
 description = "craftable - craft elegant tables using format strings"
 authors = [{ name = "Paul York", email = "paul@yorkfamily.com" }]
 readme = "README.md"
